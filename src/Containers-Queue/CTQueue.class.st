@@ -1,85 +1,111 @@
 "
-I'm a simple FIFO queue i.e., first in first out structure. I support basic collection protocol and in addition enqueue and dequeue as in Scala. 
-My basic support of collection API should be reviewd and probably improved (should check atomic queue protocol).
-
-
+I'm a simple FIFO queue i.e., first in first out structure. I support basic collection protocol with efficient O(1) add and remove operations using a singly linked list.
 "
 Class {
 	#name : #CTQueue,
 	#superclass : #Object,
 	#instVars : [
-		'elements'
+		'head',
+		'tail',
+		'size'
 	],
 	#category : #'Containers-Queue'
 }
 
 { #category : #adding }
 CTQueue >> add: anElement [
-	"Add an element to the receiver. Note that the addition makes sure that when iterating over the receiver added first element are accessed first."
-	
-	elements addLast: anElement.
+	"Add an element to the end of the queue (FIFO order)."
+	| newNode |
+	newNode := CTQueueNode new value: anElement.
+	head ifNil: [ 
+		head := newNode.
+		tail := newNode.
+	] ifNotNil: [ 
+		tail next: newNode.
+		tail := newNode.
+	].
+	size := size + 1.
 	^ anElement
 ]
 
 { #category : #adding }
 CTQueue >> addAll: aCollection [
-	"Add the elements contained in the argument to the receiver. Note that the addition makes sure that when iterating over the receiver added first element are accessed first."
-	
-	elements addAllLast: aCollection.
+	"Add all elements from aCollection to the end of the queue."
+	aCollection do: [ :each | self add: each ].
 	^ aCollection
 ]
 
 { #category : #iterating }
 CTQueue >> do: aBlock [
-	"iterates the elements of the receiver starting first by first added elements."
-	
-	elements do: aBlock
+	"Iterate over elements in FIFO order."
+	| current |
+	current := head.
+	[ current notNil ] whileTrue: [ 
+		aBlock value: current value.
+		current := current next.
+	]
 ]
 
 { #category : #testing }
 CTQueue >> includes: anElement [
-
-	^ elements includes: anElement
+	"Check if anElement exists in the queue."
+	| current |
+	current := head.
+	[ current notNil ] whileTrue: [ 
+		current value = anElement ifTrue: [ ^ true ].
+		current := current next.
+	].
+	^ false
 ]
 
 { #category : #initialization }
 CTQueue >> initialize [
+	"Initialize an empty queue."
 	super initialize.
-	elements := OrderedCollection new. 
+	head := nil.
+	tail := nil.
+	size := 0.
 ]
 
 { #category : #testing }
 CTQueue >> isEmpty [
-
-	^ elements isEmpty
-]
-
-{ #category : #removing }
-CTQueue >> remove [
-	"Return the older element of the receiver.."
-	
-	^ elements ifEmpty: [ nil ] ifNotEmpty: [ elements removeFirst ].
-]
-
-{ #category : #removing }
-CTQueue >> removeIfNone: aBlock [
-	"Return the older element of the receiver.."
-	elements ifEmpty: [ ^ aBlock value ].
-	^ elements removeFirst
-]
-
-{ #category : #removing }
-CTQueue >> poll [
-	"Returns and removes the front element, or nil if empty."
-	^ elements ifEmpty: [ nil ] ifNotEmpty: [ elements removeFirst ].
+	"Return true if the queue is empty."
+	^ head isNil
 ]
 
 { #category : #accessing }
 CTQueue >> peek [
-	^ elements ifEmpty: [ nil ] ifNotEmpty: [ elements first ].
+	"Return the front element without removing it, or nil if empty."
+	^ head ifNil: [ nil ] ifNotNil: [ head value ]
+]
+
+{ #category : #removing }
+CTQueue >> poll [
+	"Return and remove the front element, or nil if empty."
+	^ self remove
+]
+
+{ #category : #removing }
+CTQueue >> remove [
+	"Return and remove the oldest element, or nil if empty."
+	| value |
+	head ifNil: [ ^ nil ].
+	value := head value.
+	head := head next.
+	head ifNil: [ tail := nil ].
+	size := size - 1.
+	^ value
+]
+
+{ #category : #removing }
+CTQueue >> removeIfNone: aBlock [
+	"Return and remove the oldest element, or evaluate aBlock if empty."
+	head ifNil: [ ^ aBlock value ].
+	^ self remove
 ]
 
 { #category : #accessing }
 CTQueue >> size [
-	^ elements size
+	"Return the number of elements in the queue."
+	^ size
 ]
