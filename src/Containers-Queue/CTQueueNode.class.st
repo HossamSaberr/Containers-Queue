@@ -1,29 +1,30 @@
 Class {
-	#name : #CTQueueNode,
-	#superclass : #Object,
+	#name : 'CTQueueNode',
+	#superclass : 'Object',
 	#instVars : [
 		'value',
 		'next'
 	],
-	#category : #'Containers-Queue'
+	#category : 'Containers-Queue',
+	#package : 'Containers-Queue'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CTQueueNode >> next [
 	^ next
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CTQueueNode >> next: aNode [
 	next := aNode
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CTQueueNode >> value [
 	^ value
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CTQueueNode >> value: anObject [
 	value := anObject
 ]

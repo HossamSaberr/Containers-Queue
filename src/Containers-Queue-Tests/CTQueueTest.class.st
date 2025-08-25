@@ -3,17 +3,18 @@ I'm a simple queue i.e., first in first out structure.
 I support basic collection protocol and in addition enqueue and dequeue as in Scala. 
 "
 Class {
-	#name : #CTQueueTest,
-	#superclass : #TestCase,
-	#category : #'Containers-Queue-Tests'
+	#name : 'CTQueueTest',
+	#superclass : 'TestCase',
+	#category : 'Containers-Queue-Tests',
+	#package : 'Containers-Queue-Tests'
 }
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> queueClass [
 	^ CTQueue
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testAdd [
 	| queue |
 	queue := self queueClass new.
@@ -23,7 +24,7 @@ CTQueueTest >> testAdd [
 	self assert: (queue includes: 2)
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testAddAll [
 	"Ensure queueAll adds multiple elements at once."
 	| queue |
@@ -35,7 +36,7 @@ CTQueueTest >> testAddAll [
 	self assert: queue remove equals: 40.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testAddAllLargeCollection [
 	"Test adding a large collection via addAll."
 	| queue collection size |
@@ -48,7 +49,7 @@ CTQueueTest >> testAddAllLargeCollection [
 	self assert: queue isEmpty.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testAddGarantyFIFOOrder [
 	"Ensure elements are dequeued in FIFO order."
 	| queue |
@@ -62,7 +63,7 @@ CTQueueTest >> testAddGarantyFIFOOrder [
 	self assert: queue isEmpty.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testAddNilElement [
 	"Test adding a nil element to the queue."
 	| queue |
@@ -74,7 +75,28 @@ CTQueueTest >> testAddNilElement [
 	self assert: queue isEmpty.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
+CTQueueTest >> testAddUnless [
+	| queue |
+	queue := self queueClass new.
+	queue add: 1 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: queue size equals: 1 .
+	queue add: 2 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: (queue includes: 2) .
+	self assert: queue size equals: 2 .
+	queue add: 4 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: (queue includes: 2) .
+	self assert: queue size equals: 2 .
+	queue add: 3 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: (queue includes: 2) .
+	self assert: queue size equals: 2
+]
+
+{ #category : 'tests' }
 CTQueueTest >> testDoIteration [
 	"Test iterating over the queue with do: in FIFO order."
 	| queue collected |
@@ -86,19 +108,19 @@ CTQueueTest >> testDoIteration [
 	self assert: queue size equals: 4. "Iteration should not modify the queue"
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testEmptyQueue [
 	self assert: self queueClass new isEmpty
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testEmptyQueueRemove [
 	| queue |
 	queue := self queueClass new.
 	self assert: queue remove isNil.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testIncludes [
 	"Test the includes: method for existing and non-existing elements."
 	| queue |
@@ -109,7 +131,7 @@ CTQueueTest >> testIncludes [
 	self assert: queue size equals: 3. "includes: should not modify the queue"
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testInterleavedAddRemove [
 	"Test interleaved add and remove operations to ensure FIFO order and correctness."
 	| queue |
@@ -125,7 +147,7 @@ CTQueueTest >> testInterleavedAddRemove [
 	self assert: queue isEmpty.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testIsEmpty [
 	"Ensure isEmpty works correctly."
 	| queue |
@@ -137,7 +159,7 @@ CTQueueTest >> testIsEmpty [
 	self assert: queue isEmpty.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testLargeQueuePerformance [
 	"Verify FIFO behavior and performance with a large queue."
 	| queue size startTime endTime duration maxDuration |
@@ -162,7 +184,7 @@ CTQueueTest >> testLargeQueuePerformance [
 	self assert: queue isEmpty.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testPeek [
 	"Ensure peek returns the first element without removing it."
 	| queue |
@@ -173,7 +195,7 @@ CTQueueTest >> testPeek [
 	self assert: queue size equals: 2. "Peek should not remove elements"
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testPoll [
 	"Ensure poll behaves correctly, returning nil when empty."
 	| queue |
@@ -185,17 +207,17 @@ CTQueueTest >> testPoll [
 	self assert: queue poll isNil.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testQueue [
 	self assert: self queueClass new isEmpty
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testQueueGarantyFIFOOrder [
 	self assert: self queueClass new isEmpty
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testRemove [
 	"Ensure remove behaves correctly, returning nil when empty."
 	| queue |
@@ -207,7 +229,7 @@ CTQueueTest >> testRemove [
 	self assert: queue remove equals: 2
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testRemoveIfNone [
 	"Ensure removeIfNone works correctly."
 	| queue result |
@@ -216,7 +238,7 @@ CTQueueTest >> testRemoveIfNone [
 	self assert: result equals: 'fallback'.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testSizeAccuracy [
 	"Test that the size method accurately reflects the number of elements."
 	| queue |
@@ -232,7 +254,7 @@ CTQueueTest >> testSizeAccuracy [
 	self assert: queue size equals: 2.
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testStressAddRemove [
 	"Stress test with many add and remove operations."
 	| queue iterations |
