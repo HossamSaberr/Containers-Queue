@@ -1,251 +1,423 @@
 "
-I'm a simple queue i.e., first in first out structure. 
-I support basic collection protocol and in addition enqueue and dequeue as in Scala. 
+I provide a comprehensive suite of unit tests for the CTQueue class.
+My tests cover basic operations, FIFO behavior, error handling, state management,
+capacity growth, constructors, bulk operations, and various edge cases to ensure
+the implementation is robust, correct, and performant.
 "
 Class {
-	#name : #CTQueueTest,
-	#superclass : #TestCase,
-	#category : #'Containers-Queue-Tests'
+	#name : 'CTQueueTest',
+	#superclass : 'TestCase',
+	#instVars : [
+		'queue'
+	],
+	#category : 'Containers-Queue-Tests',
+	#package : 'Containers-Queue-Tests'
 }
 
-{ #category : #tests }
-CTQueueTest >> queueClass [
-	^ CTQueue
+{ #category : 'running' }
+CTQueueTest >> setUp [
+	super setUp.
+
+	queue := CTQueue new: 5
 ]
 
-{ #category : #tests }
-CTQueueTest >> testAdd [
-	| queue |
-	queue := self queueClass new.
-	queue add: 1.
-	queue add: 2.
-	self assert: (queue includes: 1).
-	self assert: (queue includes: 2)
+{ #category : 'tests' }
+CTQueueTest >> testAlternatingEnqueueDequeue [
+
+	queue enqueue: 'a'.
+	self assert: queue dequeue equals: 'a'.
+	
+	queue enqueue: 'b'; enqueue: 'c'.
+	self assert: queue dequeue equals: 'b'.
+	
+	queue enqueue: 'd'.
+	self assert: queue front equals: 'c'.
+	self assert: queue size equals: 2
 ]
 
-{ #category : #tests }
-CTQueueTest >> testAddAll [
-	"Ensure queueAll adds multiple elements at once."
-	| queue |
-	queue := self queueClass new.
-	queue addAll: #(10 20 30 40).
-	self assert: queue remove equals: 10.
-	self assert: queue remove equals: 20.
-	self assert: queue remove equals: 30.
-	self assert: queue remove equals: 40.
+{ #category : 'tests' }
+CTQueueTest >> testAsArray [
+
+	| result |
+	queue enqueue: 'first'; enqueue: 'second'; enqueue: 'third'.
+	result := queue asArray.
+	
+	self assert: result equals: #('first' 'second' 'third').
+	"Elements from front to rear"
 ]
 
-{ #category : #tests }
-CTQueueTest >> testAddAllLargeCollection [
-	"Test adding a large collection via addAll."
-	| queue collection size |
-	queue := self queueClass new.
+{ #category : 'tests' }
+CTQueueTest >> testAsOrderedCollection [
+
+	| result |
+	queue enqueue: 'a'; enqueue: 'b'; enqueue: 'c'.
+	result := queue asOrderedCollection.
+	
+	self assert: result class equals: OrderedCollection.
+	self assert: result asArray equals: #('a' 'b' 'c')
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testCapacityGrowth [
+
+	| originalCapacity |
+	originalCapacity := queue capacity.
+	
+	1 to: originalCapacity do: [ :i | queue enqueue: i ].
+	self assert: queue capacity equals: originalCapacity.
+	
+	queue enqueue: 'overflow'.
+	self assert: queue capacity equals: originalCapacity * 2.
+	self assert: queue size equals: originalCapacity + 1
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testCircularArrayWrapping [
+
+	| testQueue |
+	testQueue := CTQueue new: 3.
+	
+	"Fill the queue"
+	testQueue enqueue: 1; enqueue: 2; enqueue: 3.
+	
+	"Remove front elements"
+	testQueue dequeue; dequeue.
+	
+	"Add more elements to test wraparound"
+	testQueue enqueue: 4; enqueue: 5.
+	
+	self assert: testQueue front equals: 3.
+	self assert: testQueue size equals: 3
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testCopyCreatesNewObject [
+
+	| copy |
+	queue
+		enqueue: 'a';
+		enqueue: 'b'.
+	copy := queue copy.
+	self deny: queue identicalTo: copy
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testCopyHasSameContents [
+
+	| copy |
+	queue
+		enqueue: 'first';
+		enqueue: 'second';
+		enqueue: 'third'.
+	copy := queue copy.
+	self assert: copy size equals: queue size.
+	self assert: copy front equals: queue front
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testCopyIsIndependent [
+
+	| copy |
+	queue enqueue: 'a'; enqueue: 'b'.
+	copy := queue copy.
+	"Now, modify the original queue"
+	queue dequeue.
+	queue enqueue: 'c'.
+	
+	self assert: copy size equals: 2.
+	self assert: copy front equals: 'a'.
+	self deny: copy front equals: queue front
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testDefaultQueueCreation [
+
+	| defaultQueue |
+	defaultQueue := CTQueue new.
+	self assert: defaultQueue capacity equals: 10.
+	self assert: defaultQueue isEmpty.
+	self assert: defaultQueue size equals: 0
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testDequeueAllElements [
+
+	queue
+		enqueue: 'a';
+		enqueue: 'b';
+		enqueue: 'c'.
+	queue
+		dequeue;
+		dequeue;
+		dequeue.
+	self assert: queue isEmpty.
+	self assert: queue size equals: 0
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testDequeueMultipleElements [
+
+	queue enqueue: 'first'; enqueue: 'second'; enqueue: 'third'.
+	
+	self assert: queue dequeue equals: 'first'.
+	self assert: queue dequeue equals: 'second'.
+	self assert: queue size equals: 1.
+	self assert: queue front equals: 'third'
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testDequeueSingleElement [
+
+	| element |
+	queue enqueue: 'test'.
+	element := queue dequeue.
+	self assert: element equals: 'test'.
+	self assert: queue isEmpty.
+	self assert: queue size equals: 0
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testDoIteration [
+
+	| elements |
+	queue enqueue: 'first'; enqueue: 'second'; enqueue: 'third'.
+	elements := OrderedCollection new.
+	
+	queue do: [ :each | elements add: each ].
+	
+	self assert: elements asArray equals: #('first' 'second' 'third').
+	self assert: queue size equals: 3. "Iteration should not modify the queue"
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testDynamicQueue [
+
+	| testQueue |
+	testQueue := CTQueue new: 2.
+	testQueue
+		enqueue: 'a';
+		enqueue: 'b'.
+	self assert: testQueue capacity equals: 2.
+	"Enqueue one more - should double capacity"
+	testQueue enqueue: 'c'.
+	self assert: testQueue capacity equals: 4.
+	self assert: testQueue size equals: 3.
+	self assert: testQueue front equals: 'a'
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testEnqueueAll [
+
+		| result |
+	result := queue enqueueAll: #('a' 'b' 'c').
+	
+	self assert: queue size equals: 3.
+	self assert: queue front equals: 'a'.
+	self assert: result identicalTo: queue
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testEnqueueAllLargeCollection [
+
+	| collection size |
 	size := 50000.
 	collection := (1 to: size) asArray.
-	queue addAll: collection.
+	queue enqueueAll: collection.
 	self assert: queue size equals: size.
-	1 to: size do: [ :i | self assert: queue remove equals: i ].
-	self assert: queue isEmpty.
+	1 to: size do: [ :i | self assert: queue dequeue equals: i ].
+	self assert: queue isEmpty
 ]
 
-{ #category : #tests }
-CTQueueTest >> testAddGarantyFIFOOrder [
-	"Ensure elements are dequeued in FIFO order."
-	| queue |
-	queue := self queueClass new.
-	queue add: 'first'.
-	queue add: 'second'.
-	queue add: 'third'.
-	self assert: queue remove equals: 'first'.
-	self assert: queue remove equals: 'second'.
-	self assert: queue remove equals: 'third'.
+{ #category : 'tests' }
+CTQueueTest >> testEnqueueAllWithEmptyCollection [
+
+	| result |
+	result := queue enqueueAll: #().
 	self assert: queue isEmpty.
+	self assert: result identicalTo: queue
 ]
 
-{ #category : #tests }
-CTQueueTest >> testAddNilElement [
-	"Test adding a nil element to the queue."
-	| queue |
-	queue := self queueClass new.
-	queue add: nil.
+{ #category : 'tests' }
+CTQueueTest >> testEnqueueMultipleElements [
+
+	queue
+		enqueue: 'first';
+		enqueue: 'second';
+		enqueue: 'third'.
+	self assert: queue size equals: 3.
+	self assert: queue front equals: 'first'.
+	self deny: queue isEmpty
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testEnqueueNilElement [
+
+	queue enqueue: nil.
 	self assert: queue size equals: 1.
-	self assert: queue peek isNil.
-	self assert: queue remove isNil.
-	self assert: queue isEmpty.
+	self assert: queue front isNil.
+	self assert: queue dequeue isNil.
+	self assert: queue isEmpty
 ]
 
-{ #category : #tests }
-CTQueueTest >> testDoIteration [
-	"Test iterating over the queue with do: in FIFO order."
-	| queue collected |
-	queue := self queueClass new.
-	queue addAll: #(10 20 30 40).
-	collected := OrderedCollection new.
-	queue do: [ :each | collected add: each ].
-	self assert: collected asArray equals: #(10 20 30 40).
-	self assert: queue size equals: 4. "Iteration should not modify the queue"
+{ #category : 'tests' }
+CTQueueTest >> testEnqueueSingleElement [
+
+	queue enqueue: 'first'.
+	self assert: queue size equals: 1.
+	self deny: queue isEmpty.
+	self assert: queue front equals: 'first'
 ]
 
-{ #category : #tests }
-CTQueueTest >> testEmptyQueue [
-	self assert: self queueClass new isEmpty
+{ #category : 'tests' }
+CTQueueTest >> testErrorHandling [
+
+	self should: [ queue dequeue ] raise: Error.
+	self should: [ queue front ] raise: Error.
+	
+	queue enqueue: 'test'.
+	queue dequeue.
+	
+	self should: [ queue dequeue ] raise: Error.
+	self should: [ queue front ] raise: Error
 ]
 
-{ #category : #tests }
-CTQueueTest >> testEmptyQueueRemove [
-	| queue |
-	queue := self queueClass new.
-	self assert: queue remove isNil.
+{ #category : 'tests' }
+CTQueueTest >> testFIFOOrdering [
+
+	queue enqueue: 'first'; enqueue: 'second'; enqueue: 'third'; enqueue: 'fourth'.
+	
+	self assert: queue dequeue equals: 'first'.
+	self assert: queue dequeue equals: 'second'.
+	self assert: queue dequeue equals: 'third'.
+	self assert: queue dequeue equals: 'fourth'
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
+CTQueueTest >> testFrontWithoutRemoving [
+
+	queue enqueue: 'first'; enqueue: 'second'.
+	
+	self assert: queue front equals: 'first'.
+	self assert: queue size equals: 2.
+	self assert: queue front equals: 'first'. "Still there"
+]
+
+{ #category : 'tests' }
 CTQueueTest >> testIncludes [
-	"Test the includes: method for existing and non-existing elements."
-	| queue |
-	queue := self queueClass new.
-	queue addAll: #(5 10 15).
+
+	queue enqueueAll: #(5 10 15).
 	self assert: (queue includes: 10).
 	self deny: (queue includes: 20).
-	self assert: queue size equals: 3. "includes: should not modify the queue"
+	self assert: queue size equals: 3. 
 ]
 
-{ #category : #tests }
-CTQueueTest >> testInterleavedAddRemove [
-	"Test interleaved add and remove operations to ensure FIFO order and correctness."
-	| queue |
-	queue := self queueClass new.
-	queue add: 1.
-	queue add: 2.
-	self assert: queue remove equals: 1.
-	queue add: 3.
-	self assert: queue remove equals: 2.
-	queue add: 4.
-	self assert: queue remove equals: 3.
-	self assert: queue remove equals: 4.
-	self assert: queue isEmpty.
+{ #category : 'tests' }
+CTQueueTest >> testInterleavedEnqueueDequeue [
+
+	queue enqueue: 1.
+	queue enqueue: 2.
+	self assert: queue dequeue equals: 1.
+	queue enqueue: 3.
+	self assert: queue dequeue equals: 2.
+	queue enqueue: 4.
+	self assert: queue dequeue equals: 3.
+	self assert: queue dequeue equals: 4.
+	self assert: queue isEmpty
 ]
 
-{ #category : #tests }
+{ #category : 'tests' }
 CTQueueTest >> testIsEmpty [
-	"Ensure isEmpty works correctly."
-	| queue |
-	queue := self queueClass new.
+
 	self assert: queue isEmpty.
-	queue add: 1.
+	queue enqueue: 'test'.
 	self deny: queue isEmpty.
-	queue remove.
-	self assert: queue isEmpty.
+	queue dequeue.
+	self assert: queue isEmpty
 ]
 
-{ #category : #tests }
-CTQueueTest >> testLargeQueuePerformance [
-	"Verify FIFO behavior and performance with a large queue."
-	| queue size startTime endTime duration maxDuration |
-	queue := self queueClass new.
-	size := 100000. 
+{ #category : 'tests' }
+CTQueueTest >> testQueueCreationWithCapacity [
+
+	| testQueue |
+	testQueue := CTQueue new: 3.
+	self assert: testQueue capacity equals: 3.
+	self assert: testQueue isEmpty.
+	self assert: testQueue size equals: 0
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testQueueCreationWithInvalidCapacity [
+
+	self should: [ CTQueue new: -1 ] raise: Error.
+	self should: [ CTQueue new: -10 ] raise: Error
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testQueueCreationWithZeroCapacity [
+
+	| zeroQueue |
+	zeroQueue := CTQueue new: 0.
 	
-	"Measure time to add elements"
-	startTime := DateAndTime now.
-	1 to: size do: [ :i | queue add: i ].
-	endTime := DateAndTime now.
-	duration := endTime - startTime.
-	maxDuration := 5 seconds. "Expect adding 100,000 elements to take less than 5 seconds"
-	self assert: duration < maxDuration description: 'Adding elements took too long'.
+	self assert: zeroQueue capacity equals: 0.
+	self assert: zeroQueue isEmpty.
+	self assert: zeroQueue size equals: 0.
+	
+	zeroQueue enqueue: 'first'.
+	self assert: zeroQueue capacity equals: 10.
+	self assert: zeroQueue size equals: 1
+]
 
-	"Measure time to remove elements and verify FIFO order"
-	startTime := DateAndTime now.
-	1 to: size do: [ :i | self assert: queue remove equals: i ].
-	endTime := DateAndTime now.
-	duration := endTime - startTime.
-	self assert: duration < maxDuration description: 'Removing elements took too long'.
+{ #category : 'tests' }
+CTQueueTest >> testRemoveAll [
 
+	queue
+		enqueue: 'a';
+		enqueue: 'b';
+		enqueue: 'c'.
+	queue removeAll.
 	self assert: queue isEmpty.
-]
-
-{ #category : #tests }
-CTQueueTest >> testPeek [
-	"Ensure peek returns the first element without removing it."
-	| queue |
-	queue := self queueClass new.
-	queue add: 42.
-	queue add: 99.
-	self assert: queue peek equals: 42.
-	self assert: queue size equals: 2. "Peek should not remove elements"
-]
-
-{ #category : #tests }
-CTQueueTest >> testPoll [
-	"Ensure poll behaves correctly, returning nil when empty."
-	| queue |
-	queue := self queueClass new.
-	queue add: 'A'.
-	queue add: 'B'.
-	self assert: queue poll equals: 'A'.
-	self assert: queue poll equals: 'B'.
-	self assert: queue poll isNil.
-]
-
-{ #category : #tests }
-CTQueueTest >> testQueue [
-	self assert: self queueClass new isEmpty
-]
-
-{ #category : #tests }
-CTQueueTest >> testQueueGarantyFIFOOrder [
-	self assert: self queueClass new isEmpty
-]
-
-{ #category : #tests }
-CTQueueTest >> testRemove [
-	"Ensure remove behaves correctly, returning nil when empty."
-	| queue |
-	queue := self queueClass new.
-	queue add: 1.
-	queue add: 2.
-	queue add: 3.
-	self assert: queue remove equals: 1.
-	self assert: queue remove equals: 2
-]
-
-{ #category : #tests }
-CTQueueTest >> testRemoveIfNone [
-	"Ensure removeIfNone works correctly."
-	| queue result |
-	queue := self queueClass new.
-	result := queue removeIfNone: [ 'fallback' ].
-	self assert: result equals: 'fallback'.
-]
-
-{ #category : #tests }
-CTQueueTest >> testSizeAccuracy [
-	"Test that the size method accurately reflects the number of elements."
-	| queue |
-	queue := self queueClass new.
 	self assert: queue size equals: 0.
-	queue add: 1.
+	queue enqueue: 'd'.
+	self deny: queue isEmpty.
 	self assert: queue size equals: 1.
-	queue addAll: #(2 3 4).
-	self assert: queue size equals: 4.
-	queue remove.
-	self assert: queue size equals: 3.
-	queue removeIfNone: [ nil ].
-	self assert: queue size equals: 2.
+	self assert: queue front equals: 'd'
 ]
 
-{ #category : #tests }
-CTQueueTest >> testStressAddRemove [
-	"Stress test with many add and remove operations."
-	| queue iterations |
-	queue := self queueClass new.
-	iterations := 10000.
-	1 to: iterations do: [ :i | 
-		queue add: i.
-		self assert: queue size equals: 1.
-		self assert: queue remove equals: i.
-		self assert: queue isEmpty.
-	].
-	"Add multiple elements and remove them"
-	queue addAll: (1 to: 1000).
-	1 to: 1000 do: [ :i | self assert: queue remove equals: i ].
+{ #category : 'tests' }
+CTQueueTest >> testRemoveAllOnEmptyQueue [
+
+	queue removeAll.
+	
 	self assert: queue isEmpty.
+	self assert: queue size equals: 0
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testSearchExistingElement [
+
+	queue enqueue: 'a'; enqueue: 'b'; enqueue: 'c'; enqueue: 'b'.
+	
+	self assert: (queue search: 'a') equals: 1. "Front element"
+	self assert: (queue search: 'b') equals: 2. "First occurrence"
+	self assert: (queue search: 'c') equals: 3
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testSearchNonExistentElement [
+
+	queue enqueue: 'a'; enqueue: 'b'; enqueue: 'c'.
+	
+	self assert: (queue search: 'x') equals: -1
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testSize [
+
+	self assert: queue size equals: 0.
+	queue enqueue: 'a'.
+	self assert: queue size equals: 1.
+	queue enqueue: 'b'; enqueue: 'c'.
+	self assert: queue size equals: 3.
+	queue dequeue.
+	self assert: queue size equals: 2
 ]
