@@ -421,3 +421,22 @@ CTQueueTest >> testSize [
 	queue dequeue.
 	self assert: queue size equals: 2
 ]
+
+{ #category : 'tests' }
+CTQueueTest >> testEnqueueUnless [
+	queue enqueue:  1 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: queue size equals: 1 .
+	queue enqueue: 2 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: (queue includes: 2) .
+	self assert: queue size equals: 2 .
+	queue enqueue: 4 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: (queue includes: 2) .
+	self assert: queue size equals: 2 .
+	queue enqueue: 3 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: (queue includes: 2) .
+	self assert: queue size equals: 2
+]
