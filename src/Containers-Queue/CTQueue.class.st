@@ -105,6 +105,19 @@ CTQueue >> enqueue: anObject [
 	size := size + 1.
 	^ self
 ]
+{ #category : 'adding' }
+CTQueue >> enqueue: anObject unless: thisTestIsTrue [
+	1 to: self size do: [ :i |
+		( thisTestIsTrue value: (elements at: (self indexAt: i - 1 ) ) ) ifTrue: [ ^ self ]
+		].
+	self isFull ifTrue: [ self grow ].
+	
+	elements at: rearIndex put: anObject.
+	rearIndex := self nextIndex: rearIndex.
+	size := size + 1.
+	^ self
+]
+
 
 { #category : 'adding' }
 CTQueue >> enqueueAll: aCollection [
@@ -217,3 +230,4 @@ CTQueue >> size [
 
 	^ size
 ]
+
