@@ -37,9 +37,10 @@ CTQueue class >> new: anInteger [
 { #category : 'comparing' }
 CTQueue >> = anObject [
 
+	self class = anObject class ifFalse: [ ^ false ].
 	self == anObject ifTrue: [ ^ true ].
-	self species == anObject species ifFalse: [ ^ false ].
 	self size = anObject size ifFalse: [ ^ false ].
+
 	^ self asArray = anObject asArray
 ]
 
