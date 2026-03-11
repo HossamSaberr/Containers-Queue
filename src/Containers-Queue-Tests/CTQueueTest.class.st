@@ -269,6 +269,38 @@ CTQueueTest >> testEnqueueSingleElement [
 ]
 
 { #category : 'tests' }
+CTQueueTest >> testEnqueueUnless [
+	queue enqueue:  1 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: queue size equals: 1 .
+	queue enqueue: 2 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: (queue includes: 2) .
+	self assert: queue size equals: 2 .
+	queue enqueue: 4 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: (queue includes: 2) .
+	self assert: queue size equals: 2 .
+	queue enqueue: 3 unless: [ :v | (v rem: 2) = 0].
+	self assert: (queue includes: 1).
+	self assert: (queue includes: 2) .
+	self assert: queue size equals: 2
+]
+
+{ #category : 'tests' }
+CTQueueTest >> testEquality [
+	| q1 q2 |
+	q1 := CTQueue new.
+	q2 := CTQueue new.
+	
+	q1 enqueue: 'A'; enqueue: 'B'.
+	q2 enqueue: 'A'; enqueue: 'B'.
+	
+	self assert: q1 equals: q2.
+	self assert: q1 hash equals: q2 hash.
+]
+
+{ #category : 'tests' }
 CTQueueTest >> testErrorHandling [
 
 	self should: [ queue dequeue ] raise: Error.
@@ -419,24 +451,5 @@ CTQueueTest >> testSize [
 	queue enqueue: 'b'; enqueue: 'c'.
 	self assert: queue size equals: 3.
 	queue dequeue.
-	self assert: queue size equals: 2
-]
-
-{ #category : 'tests' }
-CTQueueTest >> testEnqueueUnless [
-	queue enqueue:  1 unless: [ :v | (v rem: 2) = 0].
-	self assert: (queue includes: 1).
-	self assert: queue size equals: 1 .
-	queue enqueue: 2 unless: [ :v | (v rem: 2) = 0].
-	self assert: (queue includes: 1).
-	self assert: (queue includes: 2) .
-	self assert: queue size equals: 2 .
-	queue enqueue: 4 unless: [ :v | (v rem: 2) = 0].
-	self assert: (queue includes: 1).
-	self assert: (queue includes: 2) .
-	self assert: queue size equals: 2 .
-	queue enqueue: 3 unless: [ :v | (v rem: 2) = 0].
-	self assert: (queue includes: 1).
-	self assert: (queue includes: 2) .
 	self assert: queue size equals: 2
 ]

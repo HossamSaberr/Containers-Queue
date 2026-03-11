@@ -34,6 +34,15 @@ CTQueue class >> new: anInteger [
 		yourself
 ]
 
+{ #category : 'comparing' }
+CTQueue >> = anObject [
+
+	self == anObject ifTrue: [ ^ true ].
+	self species == anObject species ifFalse: [ ^ false ].
+	self size = anObject size ifFalse: [ ^ false ].
+	^ self asArray = anObject asArray
+]
+
 { #category : 'converting' }
 CTQueue >> asArray [
 
@@ -105,6 +114,7 @@ CTQueue >> enqueue: anObject [
 	size := size + 1.
 	^ self
 ]
+
 { #category : 'adding' }
 CTQueue >> enqueue: anObject unless: thisTestIsTrue [
 	1 to: self size do: [ :i |
@@ -117,7 +127,6 @@ CTQueue >> enqueue: anObject unless: thisTestIsTrue [
 	size := size + 1.
 	^ self
 ]
-
 
 { #category : 'adding' }
 CTQueue >> enqueueAll: aCollection [
@@ -147,6 +156,15 @@ CTQueue >> grow [
 	elements := newElements.
 	frontIndex := 1.
 	rearIndex := size + 1
+]
+
+{ #category : 'comparing' }
+CTQueue >> hash [
+
+	| hashValue |
+	hashValue := self species hash.
+	self do: [ :each | hashValue := (hashValue + each hash) hashMultiply ].
+	^ hashValue
 ]
 
 { #category : 'testing' }
@@ -230,4 +248,3 @@ CTQueue >> size [
 
 	^ size
 ]
-
