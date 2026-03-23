@@ -38,10 +38,9 @@ CTQueue class >> new: anInteger [
 CTQueue >> = anObject [
 
 	self class = anObject class ifFalse: [ ^ false ].
-	self == anObject ifTrue: [ ^ true ].
 	self size = anObject size ifFalse: [ ^ false ].
 
-	^ self asArray = anObject asArray
+	^ self elements = anObject elements
 ]
 
 { #category : 'converting' }
@@ -105,6 +104,12 @@ CTQueue >> do: aBlock [
 	]
 ]
 
+{ #category : 'accessing' }
+CTQueue >> elements [
+
+	^ elements
+]
+
 { #category : 'adding' }
 CTQueue >> enqueue: anObject [
 
@@ -161,10 +166,11 @@ CTQueue >> grow [
 
 { #category : 'comparing' }
 CTQueue >> hash [
-
 	| hashValue |
-	hashValue := self species hash.
-	self do: [ :each | hashValue := (hashValue + each hash) hashMultiply ].
+	hashValue := 131.
+	self do: [ :each | 
+		hashValue := (hashValue + each hash) hashMultiply 
+	].
 	^ hashValue
 ]
 
