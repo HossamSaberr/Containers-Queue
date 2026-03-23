@@ -168,8 +168,7 @@ CTQueue >> grow [
 CTQueue >> hash [
 	| hashValue |
 	hashValue := 131.
-	1 to: size do: [ :i | hashValue := (hashValue bitXor: (elements at: i) hash) hashMultiply 
-	].
+	1 to: size do: [ :i | hashValue := hashValue bitXor: (elements at: i) hash ].
 	^ hashValue
 ]
 
